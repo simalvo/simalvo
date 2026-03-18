@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Who?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #8e9bab;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Rajdhani', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── PAGE 1 ── */
+    #page1 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      inset: 0;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    #page1 a {
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    #question {
+      font-family: 'Rajdhani', sans-serif;
+      font-style: italic;
+      font-weight: 700;
+      font-size: clamp(2.4rem, 7vw, 6rem);
+      text-transform: uppercase;
+      color: #1a1a1a;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+      text-align: center;
+      position: relative;
+      transition: color 0.25s ease, letter-spacing 0.25s ease;
+    }
+
+    #question::after {
+      content: '';
+      display: block;
+      height: 3px;
+      width: 0%;
+      background: #1a1a1a;
+      margin: 0.3em auto 0;
+      transition: width 0.35s ease;
+    }
+
+    #page1 a:hover #question {
+      color: #000;
+      letter-spacing: 0.08em;
+    }
+
+    #page1 a:hover #question::after {
+      width: 100%;
+    }
+
+    /* ── PAGE 2 ── */
+    #page2 {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    #answer {
+      font-family: 'Share Tech Mono', monospace;
+      font-style: normal;
+      font-weight: 300;
+      font-size: clamp(1rem, 3vw, 2.2rem);
+      color: #2a2a2a;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+
+    #back {
+      margin-top: 2.5em;
+      font-family: 'Share Tech Mono', monospace;
+      font-style: normal;
+      font-size: clamp(0.6rem, 1.2vw, 0.85rem);
+      color: #555;
+      cursor: pointer;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: none;
+      background: none;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      transition: color 0.2s;
+    }
+    #back:hover { color: #111; }
+
+    /* ── ACTIVE STATE ── */
+    body.revealed #page1 {
+      opacity: 0;
+      transform: translateY(-30px);
+      pointer-events: none;
+    }
+    body.revealed #page2 {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Page 1 -->
+  <div id="page1">
+    <a href="#" id="trigger">
+      <div id="question">Who the f*ck is Simon?</div>
+    </a>
+  </div>
+
+  <!-- Page 2 -->
+  <div id="page2">
+    <div id="answer">It's Simalvo.</div>
+    <button id="back">← go back</button>
+  </div>
+
+  <script>
+    const trigger = document.getElementById('trigger');
+    const back    = document.getElementById('back');
+
+    trigger.addEventListener('click', e => {
+      e.preventDefault();
+      document.body.classList.add('revealed');
+    });
+
+    back.addEventListener('click', () => {
+      document.body.classList.remove('revealed');
+    });
+  </script>
+</body>
+</html>
