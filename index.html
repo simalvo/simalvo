@@ -123,6 +123,94 @@
       pointer-events: all;
       transform: translateY(0);
     }
+
+    /* ── KONAMI HINT ── */
+    #konami-hint {
+      position: fixed;
+      bottom: 1.4rem;
+      right: 1.4rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.06em;
+      color: #1a1a1a88;
+      background: #8e9bab;
+      border: 1px solid #1a1a1a1a;
+      border-radius: 4px;
+      padding: 0.5em 0.8em 0.55em;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+      line-height: 1.6;
+    }
+    #konami-hint.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #konami-hint .seq {
+      display: block;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      color: #1a1a1acc;
+      margin-top: 0.15em;
+    }
+
+    /* ── KONAMI EASTER EGG OVERLAY ── */
+    #konami-overlay {
+      position: fixed;
+      inset: 0;
+      background: #0d0d0d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+      z-index: 100;
+    }
+    #konami-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    #konami-terminal {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: clamp(0.75rem, 1.8vw, 1rem);
+      color: #39ff14;
+      text-align: left;
+      max-width: 560px;
+      width: 90%;
+      line-height: 2;
+    }
+    #konami-terminal .dim { color: #444; }
+    #konami-terminal .cursor {
+      display: inline-block;
+      width: 0.55em;
+      height: 1em;
+      background: #39ff14;
+      vertical-align: text-bottom;
+      animation: blink 0.75s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    #konami-dismiss {
+      margin-top: 2.5em;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      border: 1px solid #333;
+      background: none;
+      color: #555;
+      padding: 0.5em 1.4em;
+      cursor: pointer;
+      border-radius: 3px;
+      opacity: 0;
+      transition: opacity 0.4s ease, color 0.2s, border-color 0.2s;
+    }
+    #konami-dismiss.show { opacity: 1; }
+    #konami-dismiss:hover { color: #39ff14; border-color: #39ff14; }
   </style>
 </head>
 <body>
@@ -140,6 +228,17 @@
     <button id="back">← go back</button>
   </div>
 
+  <!-- Idle hint -->
+  <div id="konami-hint">
+    <span class="seq">↑ ↑ ↓ ↓ ← → ← → B A</span>
+  </div>
+
+  <!-- Konami easter egg overlay -->
+  <div id="konami-overlay">
+    <div id="konami-terminal"></div>
+    <button id="konami-dismiss">[ close ]</button>
+  </div>
+
   <script>
     const trigger = document.getElementById('trigger');
     const back    = document.getElementById('back');
@@ -151,6 +250,92 @@
 
     back.addEventListener('click', () => {
       document.body.classList.remove('revealed');
+    });
+
+    /* ── IDLE HINT ── */
+    const hint = document.getElementById('konami-hint');
+    let idleTimer;
+
+    function resetIdle() {
+      hint.classList.remove('visible');
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => hint.classList.add('visible'), 6000);
+    }
+
+    ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(ev =>
+      window.addEventListener(ev, resetIdle, { passive: true })
+    );
+    resetIdle();
+
+    /* ── KONAMI CODE ── */
+    const KONAMI = [
+      'ArrowUp','ArrowUp','ArrowDown','ArrowDown',
+      'ArrowLeft','ArrowRight','ArrowLeft','ArrowRight',
+      'b','a'
+    ];
+    let konamiPos = 0;
+
+    document.addEventListener('keydown', e => {
+      const expected = KONAMI[konamiPos];
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      if (key === expected) {
+        konamiPos++;
+        if (konamiPos === KONAMI.length) {
+          konamiPos = 0;
+          triggerKonami();
+        }
+      } else {
+        konamiPos = (key === KONAMI[0]) ? 1 : 0;
+      }
+    });
+
+    /* ── EASTER EGG ── */
+    const overlay  = document.getElementById('konami-overlay');
+    const terminal = document.getElementById('konami-terminal');
+    const dismiss  = document.getElementById('konami-dismiss');
+
+    const lines = [
+      { text: '> oh, so you found the cheat code.',   delay: 0    },
+      { text: '> fine. here\'s the truth:',            delay: 700  },
+      { text: '',                                      delay: 1300 },
+      { text: '  Simon is Simalvo.',                   delay: 1500 },
+      { text: '  Simalvo is Simon.',                   delay: 2000 },
+      { text: '  Beyond that — classified.',           delay: 2500 },
+      { text: '',                                      delay: 3000 },
+      { text: '  Clearance required :  ██████',        delay: 3200 },
+      { text: '  Your clearance     :  none',          delay: 3700 },
+      { text: '',                                      delay: 4100 },
+      { text: '> close this tab and forget everything.', delay: 4300 },
+    ];
+
+    function triggerKonami() {
+      hint.classList.remove('visible');
+      clearTimeout(idleTimer);
+
+      terminal.innerHTML = '';
+      dismiss.classList.remove('show');
+      overlay.classList.add('active');
+
+      lines.forEach(({ text, delay }) => {
+        setTimeout(() => {
+          const row = document.createElement('div');
+          row.textContent = text;
+          if (text.startsWith('  ')) row.style.color = '#cfffb0';
+          terminal.appendChild(row);
+        }, delay);
+      });
+
+      setTimeout(() => {
+        const cursorRow = document.createElement('div');
+        cursorRow.innerHTML = '<span class="cursor"></span>';
+        terminal.appendChild(cursorRow);
+        dismiss.classList.add('show');
+      }, 5000);
+    }
+
+    dismiss.addEventListener('click', () => {
+      overlay.classList.remove('active');
+      resetIdle();
     });
   </script>
 </body>
